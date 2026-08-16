@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+*.egg-info/
+
+# Local runtime data (created on first run — never commit real attendance data)
+*.db
+*.key
+takt.db
+takt.key
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
