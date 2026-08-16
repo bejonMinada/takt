@@ -47,6 +47,17 @@ CREATE TABLE IF NOT EXISTS day_types (
     day  TEXT PRIMARY KEY,
     type TEXT NOT NULL                    -- 'dayoff'
 );
+CREATE TABLE IF NOT EXISTS leave_blocks (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    day        TEXT NOT NULL,             -- YYYY-MM-DD
+    full_day   INTEGER NOT NULL DEFAULT 0,
+    start_time TEXT,                      -- HH:MM, NULL when full_day
+    end_time   TEXT,                      -- HH:MM, NULL when full_day
+    leave_type TEXT NOT NULL DEFAULT 'leave', -- 'leave' | 'holiday' | 'sick' | 'other'
+    note       TEXT,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_leave_day ON leave_blocks(day);
 CREATE TABLE IF NOT EXISTS settings (
     id      INTEGER PRIMARY KEY CHECK (id = 1),
     payload TEXT NOT NULL
@@ -83,9 +94,23 @@ CREATE INDEX IF NOT EXISTS ix_samp_day ON activity_samples(day);
 class DB:
     def __init__(self, path: str):
         self.path = path
-        self._c = sqlite3.connect(path, check_same_thread=False)
+        # timeout=30: if a second process (e.g. autostart + a manual launch
+        # both running) holds the write lock, wait instead of failing fast —
+        # the default 5s timeout was silently dropping writes under exactly
+        # that contention, since several callers (the idle-poll thread) swallow
+        # exceptions. WAL also lets readers keep working while one writer holds
+        # the lock, instead of blocking everything on every write.
+        self._c = sqlite3.connect(path, check_same_thread=False, timeout=30)
+        self._c.execute("PRAGMA journal_mode=WAL")
         self._c.row_factory = sqlite3.Row
         self._c.executescript(SCHEMA)
+        # Migration: leave_blocks predates leave_type. CREATE TABLE IF NOT
+        # EXISTS above is a no-op on an existing table, so add the column
+        # directly for installs that already have the table.
+        try:
+            self._c.execute("ALTER TABLE leave_blocks ADD COLUMN leave_type TEXT NOT NULL DEFAULT 'leave'")
+        except sqlite3.OperationalError:
+            pass  # column already exists
         self._c.commit()
 
     @contextmanager
@@ -133,6 +158,18 @@ class DB:
             c.execute("SELECT ts FROM activity_samples WHERE day=? ORDER BY ts", (day,))
             return [r["ts"] for r in c.fetchall()]
 
+    def known_ssids(self) -> list[dict]:
+        """Distinct Wi-Fi SSIDs actually seen in captured WLAN events, most
+        recently-seen first — backs the office-network picker so a user
+        selects from what's real instead of typing a name by hand."""
+        with self.cur() as c:
+            c.execute(
+                "SELECT ssid, MAX(ts) AS last_seen, COUNT(*) AS n FROM raw_events"
+                " WHERE code IN ('8001','8003') AND ssid IS NOT NULL AND ssid != ''"
+                " GROUP BY ssid ORDER BY last_seen DESC"
+            )
+            return [dict(r) for r in c.fetchall()]
+
     def days_in_range(self, start: str, end: str) -> list[str]:
         with self.cur() as c:
             c.execute(
@@ -140,8 +177,9 @@ class DB:
                 " SELECT day FROM raw_events WHERE day BETWEEN ? AND ?"
                 " UNION SELECT day FROM activity_samples WHERE day BETWEEN ? AND ?"
                 " UNION SELECT day FROM day_types WHERE day BETWEEN ? AND ?"
+                " UNION SELECT day FROM leave_blocks WHERE day BETWEEN ? AND ?"
                 ") ORDER BY day",
-                (start, end, start, end, start, end),
+                (start, end, start, end, start, end, start, end),
             )
             return [r["day"] for r in c.fetchall()]
 
@@ -158,6 +196,28 @@ class DB:
             c.execute("SELECT type FROM day_types WHERE day=?", (day,))
             r = c.fetchone()
             return r["type"] if r else None
+
+    # ---- leave blocks -------------------------------------------------------
+    def add_leave(self, day: str, full_day: bool, start_time: str | None,
+                  end_time: str | None, note: str | None,
+                  leave_type: str = "leave") -> int:
+        with self.cur() as c:
+            c.execute(
+                "INSERT INTO leave_blocks(day,full_day,start_time,end_time,leave_type,note,created_at)"
+                " VALUES(?,?,?,?,?,?,?)",
+                (day, 1 if full_day else 0, start_time, end_time, leave_type, note,
+                 dt.datetime.now().isoformat(timespec="seconds")),
+            )
+            return c.lastrowid
+
+    def delete_leave(self, leave_id: int):
+        with self.cur() as c:
+            c.execute("DELETE FROM leave_blocks WHERE id=?", (leave_id,))
+
+    def leave_for_day(self, day: str) -> list[dict]:
+        with self.cur() as c:
+            c.execute("SELECT * FROM leave_blocks WHERE day=? ORDER BY id", (day,))
+            return [dict(r) for r in c.fetchall()]
 
     # ---- derived daily + hash chain --------------------------------------
     def last_hash(self) -> str | None:

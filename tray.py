@@ -20,16 +20,13 @@ sys.path.insert(0, os.path.dirname(__file__))
 from takt.api import Api
 
 WEB_DIR = os.path.join(os.path.dirname(__file__), "web")
-ICON_SIZE = 64
+ICO_PATH = os.path.join(WEB_DIR, "assets", "icon.ico")
+MARK_PATH = os.path.join(WEB_DIR, "assets", "mark.png")
 
 
 def _make_icon_image():
-    from PIL import Image, ImageDraw
-    img = Image.new("RGBA", (ICON_SIZE, ICON_SIZE), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle([4, 4, ICON_SIZE - 4, ICON_SIZE - 4], radius=14, fill=(14, 124, 134, 255))
-    d.ellipse([20, 20, ICON_SIZE - 20, ICON_SIZE - 20], outline=(255, 255, 255, 255), width=5)
-    return img
+    from PIL import Image
+    return Image.open(MARK_PATH)
 
 
 def _idle_poll_loop(api: Api, stop_evt: threading.Event):
@@ -43,9 +40,35 @@ def _idle_poll_loop(api: Api, stop_evt: threading.Event):
         stop_evt.wait(api.settings.engine.sample_seconds)
 
 
+def _bring_existing_window_forward():
+    try:
+        import win32con
+        import win32gui
+        hwnd = win32gui.FindWindow(None, "Takt")
+        if hwnd:
+            win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+            win32gui.SetForegroundWindow(hwnd)
+    except Exception:
+        pass
+
+
 def run():
     import webview
     import pystray
+    import win32api
+    import win32event
+    import winerror
+
+    # The autostart scheduled task and a manual launch can easily race (e.g.
+    # ONLOGON fires while the user also double-clicks run.bat). Two processes
+    # writing to the same SQLite file at once is exactly the kind of
+    # contention that made sync() silently drop writes before WAL/timeout
+    # were added to db.py — so refuse to run a second instance at all rather
+    # than relying on the DB layer alone to paper over it.
+    mutex = win32event.CreateMutex(None, False, "TaktSingleInstanceMutex")
+    if win32api.GetLastError() == winerror.ERROR_ALREADY_EXISTS:
+        _bring_existing_window_forward()
+        return
 
     api = Api()
     stop_evt = threading.Event()
@@ -86,7 +109,7 @@ def run():
         ),
     )
     threading.Thread(target=icon.run, daemon=True).start()
-    webview.start()
+    webview.start(icon=ICO_PATH)
 
 
 if __name__ == "__main__":

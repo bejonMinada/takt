@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from takt.api import Api
 
 WEB_DIR = os.path.join(os.path.dirname(__file__), "web")
+ICO_PATH = os.path.join(WEB_DIR, "assets", "icon.ico")
 
 
 def _idle_poll_loop(api: Api, stop_evt: threading.Event):
@@ -53,7 +54,7 @@ def main():
         # `python main.py` run just exits normally so it's easy to test.
         return True
 
-    webview.start(private_mode=False)
+    webview.start(private_mode=False, icon=ICO_PATH)
     stop_evt.set()
 
 

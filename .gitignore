@@ -9,6 +9,7 @@ venv/
 *.key
 takt.db
 takt.key
+_demo_data/
 
 # OS
 .DS_Store

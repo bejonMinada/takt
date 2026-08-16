@@ -10,7 +10,7 @@ from __future__ import annotations
 import datetime as dt
 from .base import EventSource
 
-OFFICE = "LEX-CORP-5G"
+OFFICE = "OFFICE-WIFI-5G"
 HOME = "home-net"
 
 

@@ -35,6 +35,11 @@ def _hhmm(d: dt.datetime) -> str:
     return d.strftime("%H:%M")
 
 
+def _hhmm_to_min(s: str) -> int:
+    h, m = s.split(":")
+    return int(h) * 60 + int(m)
+
+
 def _wifi_intervals(events: list[dict]) -> list[tuple[dt.datetime, dt.datetime | None, str]]:
     """Reconstruct (start, end, ssid) intervals from 8001/8003 events."""
     intervals, open_ssid, open_ts = [], None, None
@@ -63,12 +68,44 @@ def _location(ssid: str | None, st: Settings) -> str:
 
 
 def build_day(day: str, events: list[dict], samples: list[str],
-              day_type: str | None, st: Settings) -> dict:
-    """Return the per-day summary dict consumed by the UI."""
+              day_type: str | None, st: Settings,
+              leave: list[dict] | None = None) -> dict:
+    """Return the per-day summary dict consumed by the UI.
+
+    `leave` is this day's approved-leave blocks: dicts with `full_day`
+    (bool) and, for partial blocks, `start`/`end` ("HH:MM") + optional
+    `note`. A full-day block short-circuits the rest of the day (mirrors
+    "dayoff"). Partial blocks are credited as if worked, so approved leave
+    is folded into worked_minutes for the under/overtime delta rather than
+    showing as an unexplained gap.
+    """
+    leave = leave or []
+    full_day_leave = next((b for b in leave if b.get("full_day")), None)
+
     if day_type == "dayoff":
-        return {"day": day, "state": "dayoff", "sessions": [],
+        return {"day": day, "state": "dayoff", "sessions": [], "recurring": False,
                 "in": None, "out": None, "confidence": "off", "location": None,
-                "worked_minutes": 0, "delta_minutes": None}
+                "worked_minutes": 0, "leave_minutes": 0, "leave_blocks": [],
+                "delta_minutes": None}
+
+    if full_day_leave:
+        return {"day": day, "state": "leave", "sessions": [],
+                "in": None, "out": None, "confidence": "off", "location": None,
+                "worked_minutes": 0, "leave_minutes": st.shift.required_minutes,
+                "leave_blocks": [], "leave_note": full_day_leave.get("note"),
+                "leave_type": full_day_leave.get("leave_type") or "leave",
+                "delta_minutes": None}
+
+    leave_minutes, leave_blocks_out = 0, []
+    for b in leave:
+        if not b.get("start_time") or not b.get("end_time"):
+            continue
+        s_m, e_m = _hhmm_to_min(b["start_time"]), _hhmm_to_min(b["end_time"])
+        if e_m > s_m:
+            leave_minutes += e_m - s_m
+            leave_blocks_out.append({"start": b["start_time"], "end": b["end_time"],
+                                     "note": b.get("note"),
+                                     "leave_type": b.get("leave_type") or "leave"})
 
     wifi = _wifi_intervals(events)
     human_events = [e for e in events if e["kind"] == "human"]
@@ -105,9 +142,26 @@ def build_day(day: str, events: list[dict], samples: list[str],
                 sessions = [(first, last)]
 
     if not sessions:
+        if leave_minutes:
+            delta = leave_minutes - st.shift.required_minutes
+            return {"day": day, "state": "worked", "sessions": [], "in": None,
+                    "out": None, "confidence": "normal", "location": None,
+                    "worked_minutes": 0, "leave_minutes": leave_minutes,
+                    "leave_blocks": leave_blocks_out, "delta_minutes": delta}
+        # A day with nothing captured is ambiguous — device off, or genuinely
+        # never worked? If it falls on a configured recurring day off (e.g.
+        # the weekend), that ambiguity has a clear answer, so say so instead
+        # of showing an unexplained gap. Real activity above already took
+        # priority over this, so working an "off" day still shows as worked.
+        if dt.date.fromisoformat(day).weekday() in (st.off_days or []):
+            return {"day": day, "state": "dayoff", "sessions": [], "recurring": True,
+                    "in": None, "out": None, "confidence": "off", "location": None,
+                    "worked_minutes": 0, "leave_minutes": 0, "leave_blocks": [],
+                    "delta_minutes": None}
         return {"day": day, "state": "nodata", "sessions": [], "in": None,
                 "out": None, "confidence": "nodata", "location": None,
-                "worked_minutes": 0, "delta_minutes": None}
+                "worked_minutes": 0, "leave_minutes": 0, "leave_blocks": [],
+                "delta_minutes": None}
 
     out_sessions, worked = [], dt.timedelta()
     for s, e in sessions:
@@ -124,13 +178,14 @@ def build_day(day: str, events: list[dict], samples: list[str],
     locs = {os_["location"] for os_ in out_sessions}
     location = "office" if "office" in locs else ("home" if "home" in locs else "unknown")
 
-    delta = worked_min - st.shift.required_minutes
+    delta = (worked_min + leave_minutes) - st.shift.required_minutes
     confidence = "low" if used_fallback else "normal"
 
     return {
         "day": day, "state": "worked", "sessions": out_sessions,
         "in": _hhmm(day_in), "out": _hhmm(day_out),
         "worked_minutes": worked_min,
+        "leave_minutes": leave_minutes, "leave_blocks": leave_blocks_out,
         "delta_minutes": None if used_fallback else delta,
         "confidence": confidence, "location": location,
     }

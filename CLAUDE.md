@@ -129,9 +129,12 @@ the wfh_continues day shows two sessions with different `location` values.
   imply stronger guarantees than that.
 - Imported backups are tagged `source='import'` and must stay visually and
   logically separate from collected data — never counted as evidence.
-- VPN/Zscaler state can't be read (its logs aren't in Event Viewer — verified
-  by web search, not assumption). Location is inferred from Wi-Fi SSID only;
-  no-Wi-Fi days should show "unknown", never a guess.
+- VPN/proxy client state (e.g. Zscaler) can't be read (its logs aren't in
+  Event Viewer — verified by web search, not assumption). Don't name a
+  specific vendor in UI copy — the software in use varies by user/employer
+  and can change over time; keep it generic ("VPN/proxy client"). Location is
+  inferred from Wi-Fi SSID only; no-Wi-Fi days should show "unknown", never a
+  guess.
 
 ## Regenerating `web/demo.js`
 

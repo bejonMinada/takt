@@ -12,6 +12,7 @@
     --line:#DFE5EC;--line-2:#EAEEF3;
     --accent:#0E7C86;--accent-soft:#D6ECEE;--accent-ink:#0A5A62;
     --amber:#B5722A;--amber-soft:#F6E9D6;--green:#2F8F5B;
+    --blue:#3D7DBF;--blue-soft:#DCEAF7;
     --ui:'Inter',system-ui,'Segoe UI',sans-serif;
     --display:'Space Grotesk','Segoe UI',sans-serif;
     --mono:'IBM Plex Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
@@ -28,7 +29,16 @@
   .titlebar b{font-family:var(--display);font-weight:600;font-size:13px}
   .titlebar .ver{color:#7E92A6;font-family:var(--mono);font-size:11px}
   .titlebar .spacer{flex:1}
-  .runpill{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#B9C6D3;background:rgba(255,255,255,.06);padding:3px 9px;border-radius:20px}
+  .titlebar .clock{color:#B9C6D3;font-family:var(--mono);font-size:11.5px;letter-spacing:.2px}
+  #tourOverlay{display:none;position:fixed;inset:0;z-index:80}
+  #tourSpotlight{position:absolute;border-radius:10px;box-shadow:0 0 0 9999px rgba(15,20,28,.64);
+    transition:top .3s ease,left .3s ease,width .3s ease,height .3s ease;pointer-events:none}
+  #tourTooltip{position:absolute;width:300px;background:#fff;border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.35);
+    padding:16px 18px;transition:top .3s ease,left .3s ease}
+  #tourTooltip .tstep{font-size:10.5px;color:var(--accent-ink);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+  #tourTooltip .ttitle{font-family:var(--display);font-weight:600;font-size:15.5px;color:var(--ink);margin-bottom:6px}
+  #tourTooltip .tbody{font-size:13px;color:var(--ink-2);line-height:1.5;margin-bottom:14px}
+  #tourTooltip .tfoot{display:flex;justify-content:space-between;align-items:center;gap:8px}
   .dot{width:7px;height:7px;border-radius:50%;background:#42D19B;animation:pulse 2.4s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(66,209,155,.5)}70%{box-shadow:0 0 0 6px rgba(66,209,155,0)}100%{box-shadow:0 0 0 0 rgba(66,209,155,0)}}
   .shell{flex:1;display:flex;min-height:0}
@@ -45,6 +55,11 @@
   .who .av{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:12px}
   .who .nm{font-weight:600;color:var(--ink)}.who .sub{color:var(--muted);font-size:11px}
   .capnote{margin-top:10px;color:var(--muted);font-size:11px;display:flex;align-items:center;gap:6px}
+  .guideBtn{display:flex;align-items:center;gap:6px;width:100%;margin-top:10px;padding:7px 9px;
+    border:1px solid var(--line);background:var(--surface);border-radius:8px;font-size:12px;
+    font-weight:500;color:var(--ink-2);cursor:pointer;font-family:inherit}
+  .guideBtn:hover{background:var(--surface-2);border-color:#CCD6E0}
+  .guideBtn svg{width:14px;height:14px;flex:none;stroke:var(--accent-ink);fill:none;stroke-width:1.8}
   .capnote .dot{background:#42D19B}
   .main{flex:1;min-width:0;display:flex;flex-direction:column}
   .toolbar{flex:none;display:flex;align-items:center;gap:10px;padding:14px 20px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
@@ -95,10 +110,12 @@
     font-weight:500;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);z-index:2;overflow:hidden;white-space:nowrap}
   .seshblock.home{background:linear-gradient(90deg,#8C6BB1,#9E7EC2)}
   .seshblock.low{background:linear-gradient(90deg,#8FB9BD,#A6C7CA);color:#20343a}
+  .seshblock.leave{background:repeating-linear-gradient(135deg,var(--blue),var(--blue) 5px,#5A93C7 5px,#5A93C7 10px)}
   .seshblock:hover{filter:brightness(1.06)}
   .nostate{position:absolute;inset:3px;border-radius:4px;display:flex;align-items:center;padding-left:9px;font-size:11px;z-index:2}
   .nostate.off{border:1px dashed var(--line);color:var(--faint)}
   .nostate.dayoff{background:repeating-linear-gradient(45deg,#F2F5F8,#F2F5F8 6px,#EAEEF2 6px,#EAEEF2 12px);color:var(--muted)}
+  .nostate.leave{background:repeating-linear-gradient(45deg,var(--blue-soft),var(--blue-soft) 6px,#CBE0F3 6px,#CBE0F3 12px);color:#2C5D85}
   .delta{width:74px;flex:none;text-align:right;font-family:var(--mono);font-size:11.5px;font-weight:600;padding-left:8px}
   .delta.pos{color:var(--green)}.delta.neg{color:var(--amber)}.delta.flat{color:var(--faint);font-weight:500}
   table{width:100%;border-collapse:collapse;font-size:13px}
@@ -110,6 +127,7 @@
   .pill.ok{background:var(--accent-soft);color:var(--accent-ink)}
   .pill.low{background:var(--amber-soft);color:var(--amber)}
   .pill.no{background:#EEF1F4;color:var(--faint)}.pill.off{background:#EAEDF1;color:var(--muted)}
+  .pill.leave{background:var(--blue-soft);color:#2C5D85}
   .loctag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted)}
   .loctag svg{width:12px;height:12px;stroke:var(--muted);fill:none;stroke-width:1.7}
   .muted{color:var(--muted)}
@@ -251,21 +269,30 @@
 </style></head>
 <body>
 <div class="app">
-  <div class="titlebar"><div class="glyph"><img src="assets/mark.png" alt=""></div><b>Takt</b><span class="ver" id="verLbl">v0.4</span>
-    <div class="spacer"></div><div class="runpill"><span class="dot"></span> <span id="capLbl">Capturing</span></div></div>
+  <div class="titlebar"><div class="glyph"><img src="assets/mark.png" alt=""></div><b>Takt</b><span class="ver" id="verLbl">v1.0</span>
+    <div class="spacer"></div>
+    <span class="clock" id="clockLbl"></span></div>
   <div class="shell">
     <aside class="side">
       <div class="lbl">View</div>
       <nav class="nav">
         <a class="on" data-view="overview"><svg viewBox="0 0 24 24"><path d="M3 13h4v7H3zM10 4h4v16h-4zM17 9h4v11h-4z"/></svg> Overview</a>
-        <a data-view="records"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg> Daily records</a>
-        <a data-view="projects"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 5v14h7V5M14 9h7M14 14h7M14 19h7"/></svg> Projects</a>
-        <a data-view="shift"><svg viewBox="0 0 24 24"><path d="M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z"/></svg> Shift &amp; schedule</a>
-        <a data-view="backup"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v6c0 5-4 8-9 9-5-1-9-4-9-9z"/></svg> Backup &amp; security</a>
+        <a data-view="records"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg> Daily Records</a>
       </nav>
-      <div class="foot"><div class="who"><div class="av">BM</div>
+      <div class="lbl">Project Management</div>
+      <nav class="nav">
+        <a data-view="projects"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 5v14h7V5M14 9h7M14 14h7M14 19h7"/></svg> Projects</a>
+      </nav>
+      <div class="lbl">Settings</div>
+      <nav class="nav">
+        <a data-view="shift"><svg viewBox="0 0 24 24"><path d="M12 7v5l3 2M12 3a9 9 0 100 18 9 9 0 000-18z"/></svg> Shift &amp; Schedule</a>
+        <a data-view="backup"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v6c0 5-4 8-9 9-5-1-9-4-9-9z"/></svg> Backup &amp; Security</a>
+      </nav>
+      <div class="foot"><div class="who"><div class="av" id="userAv">BM</div>
         <div><div class="nm" id="userLbl">bejon.m</div><div class="sub" id="machineLbl">this laptop</div></div></div>
-        <div class="capnote"><span class="dot"></span> <span id="srcLbl">Reading logs</span></div></div>
+        <div class="capnote"><span class="dot"></span> <span id="srcLbl">Reading logs</span></div>
+        <button class="guideBtn" id="guideBtn" onclick="guideBtnClick()">
+          <svg viewBox="0 0 24 24"><path d="M12 2l2.4 6.8L21 11l-6.6 2.2L12 20l-2.4-6.8L3 11l6.6-2.2z"/></svg><span id="guideBtnLabel">App Guide</span></button></div>
     </aside>
     <div class="main">
       <div class="toolbar">
@@ -273,30 +300,37 @@
         <div class="seg" id="seg">
           <button data-p="week">Week</button><button data-p="month">Month</button>
           <button data-p="year">Year</button><button data-p="range" class="on">Range</button></div>
-        <button class="btn" onclick="downloadReport()"><svg viewBox="0 0 24 24"><path d="M12 5v10m0 0l-4-4m4 4l4-4M5 19h14"/></svg>Download report</button>
-        <div class="menuwrap">
-          <button class="btn" id="expBtn"><svg viewBox="0 0 24 24"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 3v12m0 0l4-4m-4 4l-4-4"/></svg>Export data</button>
-          <div class="menu" id="expMenu"><div class="mh">Export encrypted backup</div>
-            <button onclick="doExport('week')">This week</button><button onclick="doExport('range')">Current range</button>
-            <button onclick="doExport('month')">This month</button><button onclick="doExport('year')">This year</button></div>
+        <div id="rangePicker" style="display:flex;gap:6px;align-items:center">
+          <input type="date" class="inp" id="rgStart" style="width:auto">
+          <span class="muted">–</span>
+          <input type="date" class="inp" id="rgEnd" style="width:auto">
         </div>
-        <button class="btn primary" onclick="doImport()"><svg viewBox="0 0 24 24"><path d="M20 8v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8M12 15V3m0 0l-4 4m4-4l4 4"/></svg>Import backup</button>
+        <button class="btn" id="downloadReportBtn" onclick="downloadReport()"><svg viewBox="0 0 24 24"><path d="M12 5v10m0 0l-4-4m4 4l4-4M5 19h14"/></svg>Download Report</button>
+        <button class="btn" id="captureAttendanceBtn" onclick="openCaptureRange()"><svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M20 8V6a2 2 0 00-2-2h-2M20 16v2a2 2 0 01-2 2h-2M9 12a3 3 0 106 0 3 3 0 00-6 0z"/></svg>Capture Attendance</button>
+        <div class="menuwrap">
+          <button class="btn" id="expBtn"><svg viewBox="0 0 24 24"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 3v12m0 0l4-4m-4 4l-4-4"/></svg>Export Data</button>
+          <div class="menu" id="expMenu"><div class="mh">Export encrypted backup</div>
+            <button onclick="doExport('week')">This Week</button><button onclick="doExport('range')">Current Range</button>
+            <button onclick="doExport('month')">This Month</button><button onclick="doExport('year')">This Year</button></div>
+        </div>
+        <button class="btn primary" onclick="doImport()"><svg viewBox="0 0 24 24"><path d="M20 8v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8M12 15V3m0 0l-4 4m4-4l4 4"/></svg>Import Backup</button>
       </div>
       <div class="scroll">
         <section class="view on" id="overview">
           <div class="stats" id="stats"></div>
-          <div class="card"><div class="cap"><h3>Daily presence vs shift</h3>
+          <div class="card" id="presenceCard"><div class="cap"><h3>Daily Presence vs Shift</h3>
             <div class="legend"><span><i style="background:var(--accent)"></i>Office session</span>
               <span><i style="background:#9E7EC2"></i>Home session</span>
               <span><i style="background:#EEF3F6;border:1px dashed #CBD6DF"></i>Your shift</span></div></div>
             <div class="bd"><div class="track-hd"><span>06:00</span><span>10:00</span><span>14:00</span><span>18:00</span><span>20:00</span></div>
               <div id="tracks"></div><div class="coverage" id="cov"></div></div></div>
-          <div class="card"><div class="cap"><h3>Time in &amp; time out — trend</h3><div class="hint">Bands show your flex window; points are session start/end</div></div>
+          <div class="card" id="trendCard"><div class="cap"><h3>Time In &amp; Time Out — Trend</h3><div class="hint">Bands show your flex window; points are session start/end</div></div>
             <div class="bd"><div style="height:210px"><canvas id="trend"></canvas></div></div></div>
         </section>
         <section class="view" id="records">
-          <div class="card" style="margin:0"><div class="cap"><h3>Daily records</h3><div class="hint">Click a day to see the signals behind it</div></div>
-            <table><thead><tr><th>Day</th><th>Where</th><th>In</th><th>Out</th><th>Worked</th><th>vs shift</th><th>Confidence</th></tr></thead>
+          <div class="card" style="margin:0"><div class="cap"><div><h3>Daily Records</h3><div class="hint">Click a day to see the signals behind it</div></div>
+              <button class="btn primary" id="markLeaveBtn" onclick="openLeaveEditor()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Mark Leave</button></div>
+            <table><thead><tr><th>Day</th><th>Where</th><th>In</th><th>Out</th><th>Worked</th><th>vs Shift</th><th>Confidence</th></tr></thead>
               <tbody id="rows"></tbody></table></div>
         </section>
         <section class="view" id="shift"></section>
@@ -312,11 +346,78 @@
   <div class="ph"><div><h3 id="dTitle"></h3><div class="muted" style="font-size:12px" id="dSub"></div></div>
     <button class="x" onclick="closeDrawer()">✕</button></div>
   <div class="pb"><div class="inout">
-    <div class="io"><div class="k">Time in</div><div class="v" id="dIn"></div><div class="s">first activity</div></div>
-    <div class="io"><div class="k">Time out</div><div class="v" id="dOut"></div><div class="s">last activity</div></div></div>
+    <div class="io"><div class="k">Time In</div><div class="v" id="dIn"></div><div class="s">first activity</div></div>
+    <div class="io"><div class="k">Time Out</div><div class="v" id="dOut"></div><div class="s">last activity</div></div></div>
     <div class="shiftctx" id="dShift"></div>
-    <div class="proof-h">Signals behind these times</div><div id="dSignals"></div></div>
+    <div class="proof-h">Signals behind these times</div><div id="dSignals"></div>
+    <div id="dLeave"></div></div>
 </div></div>
+
+<!-- mark leave -->
+<div class="drawer" id="leaveDrawer"><div class="panel">
+  <div class="ph"><div><h3>Mark Leave</h3><div class="muted" style="font-size:12px">Credited toward required hours — won't show as undertime</div></div>
+    <button class="x" onclick="closeLeaveEditor()">✕</button></div>
+  <div class="pb">
+    <div class="te-row">
+      <div><label>Start Date</label><input type="date" id="lvStart" onchange="lvSyncEnd()"></div>
+      <div><label>End Date</label><input type="date" id="lvEnd"></div>
+    </div>
+    <div class="field" style="padding:0 0 14px;border-bottom:none">
+      <div class="fl"><b>Specific Hours Only</b><p>Otherwise marks each day fully on leave</p></div>
+      <div class="ctrl"><div class="toggle off" id="lvHoursToggle" onclick="toggleLeaveHours()"></div></div>
+    </div>
+    <div class="te-row" id="lvTimeRow" style="display:none">
+      <div><label>Start Time</label><input type="time" id="lvStartTime" value="13:00"></div>
+      <div><label>End Time</label><input type="time" id="lvEndTime" value="17:00"></div>
+    </div>
+    <div class="te-row"><div><label>Type</label><select id="lvType">
+      <option value="leave">Leave</option><option value="holiday">Holiday</option>
+      <option value="sick">Sick</option><option value="offset">Offset</option><option value="other">Other</option>
+    </select></div></div>
+    <div class="te-row"><div><label>Note (Optional)</label><input type="text" id="lvNote" placeholder="e.g. Vacation, doctor's appointment"></div></div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn primary" style="flex:1;justify-content:center" onclick="saveLeave()">Save</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- capture attendance: date range picker -->
+<div class="drawer" id="captureRangeDrawer"><div class="panel">
+  <div class="ph"><div><h3>Capture Attendance</h3><div class="muted" style="font-size:12px">Screenshot proof for a badge-system fallback</div></div>
+    <button class="x" onclick="closeCaptureRange()">✕</button></div>
+  <div class="pb">
+    <div class="te-row">
+      <div><label>Start Date</label><input type="date" id="capStart" onchange="if(document.getElementById('capEnd').value<this.value)document.getElementById('capEnd').value=this.value"></div>
+      <div><label>End Date</label><input type="date" id="capEnd"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn primary" style="flex:1;justify-content:center" onclick="runCaptureAttendance()">Capture</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- capture attendance: fullscreen printable render target (native window screenshot is taken while this is showing) -->
+<div id="captureStage" style="display:none;position:fixed;inset:0;background:#fff;z-index:70;overflow:auto;padding:44px 20px">
+  <div id="captureContent" style="max-width:720px;margin:0 auto"></div>
+</div>
+
+<!-- guided tour (demo mode only) -->
+<div id="tourOverlay">
+  <div id="tourSpotlight"></div>
+  <div id="tourTooltip">
+    <div class="tstep" id="tourStepNum"></div>
+    <div class="ttitle" id="tourTitle"></div>
+    <div class="tbody" id="tourBody"></div>
+    <div class="tfoot">
+      <button class="btn" style="padding:5px 10px;font-size:12px" onclick="endTour()">Skip Tour</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn" id="tourBackBtn" style="padding:5px 12px;font-size:12px" onclick="tourBack()">Back</button>
+        <button class="btn primary" id="tourNextBtn" style="padding:5px 14px;font-size:12px" onclick="tourNext()">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- task editor (create + edit) -->
@@ -324,13 +425,13 @@
   <div class="ph"><div><h3 id="teTitle">New task</h3><div class="muted" style="font-size:12px" id="teSub"></div></div>
     <button class="x" onclick="closeTaskEditor()">✕</button></div>
   <div class="pb">
-    <div class="te-row"><div><label>Task name</label><input type="text" id="teName" placeholder="e.g. Draft proposal"></div></div>
+    <div class="te-row"><div><label>Task Name</label><input type="text" id="teName" placeholder="e.g. Draft proposal"></div></div>
     <div class="te-row">
-      <div><label>Start date</label><input type="date" id="teStart"></div>
-      <div><label>End date</label><input type="date" id="teEnd"></div>
+      <div><label>Start Date</label><input type="date" id="teStart"></div>
+      <div><label>End Date</label><input type="date" id="teEnd"></div>
     </div>
     <div class="te-row"><div><label>Status</label>
-      <select id="teStatus"><option value="todo">To do</option><option value="doing">In progress</option><option value="done">Done</option></select></div></div>
+      <select id="teStatus"><option value="todo">To Do</option><option value="doing">In Progress</option><option value="done">Done</option></select></div></div>
     <div style="display:flex;gap:8px;margin-top:16px">
       <button class="btn primary" style="flex:1;justify-content:center" onclick="saveTask()">Save</button>
       <button class="btn" id="teDelBtn" style="display:none" onclick="deleteTaskFromEditor()">Delete</button>
@@ -362,7 +463,10 @@ const WIN_START=360,WIN_END=1200,SPAN=WIN_END-WIN_START;
 const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m};
 const pct=m=>((m-WIN_START)/SPAN)*100;
 const clampPct=p=>Math.max(0,Math.min(100,p));
-let HAS_API=false, CUR={}, SETTINGS=null, chart=null;
+let HAS_API=false, CUR={}, SETTINGS=null, chart=null, OFF_DAYS_PICK=[];
+const LEAVE_TYPE_LABELS={leave:'Leave',holiday:'Holiday',sick:'Sick',offset:'Offset',other:'Other'};
+const leaveLabel=r=>LEAVE_TYPE_LABELS[r.leave_type]||'Leave';
+const STATUS_LABELS={dayoff:'Day off',leave:'On leave',nodata:'No data'};
 
 const homeIco='<svg class="loc" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>';
 const offIco ='<svg class="loc" viewBox="0 0 24 24"><path d="M4 21V5a1 1 0 011-1h9a1 1 0 011 1v16M15 9h4a1 1 0 011 1v11M8 8h1M8 12h1M8 16h1"/></svg>';
@@ -376,8 +480,8 @@ async function apiCall(fn,...args){
   if(HAS_API) return JSON.parse(await window.pywebview.api[fn](...args));
   return null;
 }
-async function loadOverview(period){
-  if(HAS_API) CUR=await apiCall('get_overview',period);
+async function loadOverview(period,start,end){
+  if(HAS_API) CUR=await apiCall('get_overview',period,start,end);
   else CUR=window.TAKT_DEMO.overview[period]||window.TAKT_DEMO.overview.range;
   render();
 }
@@ -387,13 +491,14 @@ function render(){
   const d=CUR, sh=d.shift;
   document.getElementById('hTitle').innerHTML=
     `Overview <small>${d.period_label} · Shift ${sh.start}–${sh.end} (±${Math.round(sh.flex_minutes/60)}h)</small>`;
+  if(d.range_start){document.getElementById('rgStart').value=d.range_start;document.getElementById('rgEnd').value=d.range_end;}
   // stats
   const s=d.stats;
   document.getElementById('stats').innerHTML=`
-    <div class="stat"><div class="k">Average time in</div><div class="v">${s.avg_in}</div><div class="sub">within flex window</div></div>
-    <div class="stat"><div class="k">Average time out</div><div class="v">${s.avg_out}</div><div class="sub">within flex window</div></div>
-    <div class="stat"><div class="k">Avg worked / day</div><div class="v">${s.avg_span}</div><div class="sub">excludes idle breaks</div></div>
-    <div class="stat"><div class="k">Net vs shift</div><div class="v ${s.net_positive?'pos':'neg'}">${s.net_delta}</div><div class="sub">confident days only</div></div>`;
+    <div class="stat"><div class="k">Average Time In</div><div class="v">${s.avg_in}</div><div class="sub">within flex window</div></div>
+    <div class="stat"><div class="k">Average Time Out</div><div class="v">${s.avg_out}</div><div class="sub">within flex window</div></div>
+    <div class="stat"><div class="k">Avg Worked / Day</div><div class="v">${s.avg_span}</div><div class="sub">excludes idle breaks</div></div>
+    <div class="stat"><div class="k">Net vs Shift</div><div class="v ${s.net_positive?'pos':'neg'}">${s.net_delta}</div><div class="sub">confident days only</div></div>`;
   // tracks
   const bandL=pct(toMin(sh.start)),bandR=pct(toMin(sh.end));
   document.getElementById('tracks').innerHTML=d.days.map(r=>renderTrack(r,bandL,bandR)).join('');
@@ -401,6 +506,7 @@ function render(){
   const c=d.coverage;
   document.getElementById('cov').innerHTML=
     `<b>${c.worked}</b> days with activity · <b>${c.home}</b> home · <b>${c.dayoff}</b> planned off · <b>${c.low}</b> low-confidence`+
+    (c.leave?` · <b>${c.leave}</b> on leave`:'')+
     (c.nodata?` · <b>${c.nodata}</b> no data`:'');
   // table
   document.getElementById('rows').innerHTML=d.days.map(renderRow).join('');
@@ -408,17 +514,22 @@ function render(){
 }
 
 function renderTrack(r,bandL,bandR){
-  const ico=r.state==='worked'?locIco(r.location):'';
+  const ico=(r.state==='worked'&&r.location)?locIco(r.location):'';
   let lane;
-  if(r.state==='dayoff') lane=`<div class="lane"><div class="nostate dayoff">Day off — planned</div></div>`;
+  if(r.state==='dayoff') lane=`<div class="lane"><div class="nostate dayoff">${r.recurring?'Day off — weekly':'Day off — planned'}</div></div>`;
+  else if(r.state==='leave') lane=`<div class="lane"><div class="nostate leave">${leaveLabel(r)}${r.leave_note?' — '+escapeHtml(r.leave_note):''}</div></div>`;
   else if(r.state==='nodata') lane=`<div class="lane"><div class="nostate off">No activity — laptop off or off-site</div></div>`;
   else{
-    const blocks=r.sessions.map(se=>{
+    const sessBlocks=(r.sessions||[]).map(se=>{
       const l=clampPct(pct(toMin(se.start))),w=clampPct(pct(toMin(se.end)))-l;
       const cls=r.confidence==='low'?'low':(se.location==='home'?'home':'');
       return `<div class="seshblock ${cls}" style="left:${l}%;width:${Math.max(w,4)}%" onclick="openDay('${r.day}')"><span>${se.start}</span><span>${se.end}</span></div>`;
     }).join('');
-    lane=`<div class="lane"><div class="band" style="left:${bandL}%;right:${100-bandR}%"><span class="band-lab">shift</span></div>${blocks}</div>`;
+    const leaveBlocks=(r.leave_blocks||[]).map(lb=>{
+      const l=clampPct(pct(toMin(lb.start))),w=clampPct(pct(toMin(lb.end)))-l;
+      return `<div class="seshblock leave" style="left:${l}%;width:${Math.max(w,4)}%" onclick="openDay('${r.day}')"><span>${lb.start}</span><span>${lb.end}</span></div>`;
+    }).join('');
+    lane=`<div class="lane"><div class="band" style="left:${bandL}%;right:${100-bandR}%"><span class="band-lab">shift</span></div>${sessBlocks}${leaveBlocks}</div>`;
   }
   let delta='<div class="delta flat">—</div>';
   if(r.state==='worked') delta=r.delta_str
@@ -428,13 +539,15 @@ function renderTrack(r,bandL,bandR){
 }
 
 function renderRow(r){
-  if(r.state==='dayoff') return `<tr><td><b>${r.label}</b></td><td class="muted" colspan="5">Planned day off</td><td><span class="pill off">Day off</span></td></tr>`;
+  if(r.state==='dayoff') return `<tr><td><b>${r.label}</b></td><td class="muted" colspan="5">${r.recurring?'Weekly day off':'Planned day off'}</td><td><span class="pill off">Day off</span></td></tr>`;
+  if(r.state==='leave') return `<tr onclick="openDay('${r.day}')"><td><b>${r.label}</b></td><td class="muted" colspan="5">${r.leave_note?escapeHtml(r.leave_note):leaveLabel(r)}</td><td><span class="pill leave">${leaveLabel(r)}</span></td></tr>`;
   if(r.state==='nodata') return `<tr><td><b>${r.label}</b></td><td class="muted" colspan="5">No activity captured</td><td><span class="pill no">No data</span></td></tr>`;
-  const loc=`<span class="loctag">${locIco(r.location)}${r.location[0].toUpperCase()+r.location.slice(1)}</span>`;
+  const loc=r.location?`<span class="loctag">${locIco(r.location)}${r.location[0].toUpperCase()+r.location.slice(1)}</span>`:'<span class="muted">—</span>';
   const conf=r.confidence==='normal'?'<span class="pill ok">Normal</span>':'<span class="pill low">Low · fallback</span>';
-  const worked=`${Math.floor(r.worked_minutes/60)}h ${String(r.worked_minutes%60).padStart(2,'0')}m`;
+  const worked=`${Math.floor(r.worked_minutes/60)}h ${String(r.worked_minutes%60).padStart(2,'0')}m`
+    +(r.leave_minutes?` <span class="pill leave" style="margin-left:4px">+${Math.floor(r.leave_minutes/60)}h leave</span>`:'');
   const dcell=r.delta_str?`<td class="dl" style="color:${r.delta_minutes>=0?'var(--green)':'var(--amber)'}">${r.delta_str}</td>`:'<td class="muted">n/a</td>';
-  return `<tr onclick="openDay('${r.day}')"><td><b>${r.label}</b></td><td>${loc}</td><td class="t">${r.in}</td><td class="t">${r.out}</td><td class="t muted">${worked}</td>${dcell}<td>${conf}</td></tr>`;
+  return `<tr onclick="openDay('${r.day}')"><td><b>${r.label}</b></td><td>${loc}</td><td class="t">${r.in||'—'}</td><td class="t">${r.out||'—'}</td><td class="t muted">${worked}</td>${dcell}<td>${conf}</td></tr>`;
 }
 
 function renderChart(d){
@@ -464,24 +577,146 @@ async function openDay(day){
   let d;
   if(HAS_API) d=await apiCall('get_day',day);
   else d=window.TAKT_DEMO.day[day];
-  if(!d||d.state==='dayoff'||d.state==='nodata'){toast('No session detail for this day');return;}
+  if(!d||d.state==='dayoff'||(d.state==='nodata'&&!(d.leave_records||[]).length)){toast('No session detail for this day');return;}
   document.getElementById('dTitle').textContent=new Date(day+'T00:00').toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short'});
-  document.getElementById('dIn').textContent=d.in; document.getElementById('dOut').textContent=d.out;
-  const worked=`${Math.floor(d.worked_minutes/60)}h ${String(d.worked_minutes%60).padStart(2,'0')}m`;
-  const dCls=d.delta_minutes==null?'':(d.delta_minutes>=0?'pos':'neg');
-  const dTxt=d.delta_minutes==null?'n/a — fallback capture':(d.delta_str||'');
-  const sesh=(d.sessions||[]).map(s=>`${s.start}–${s.end} (${s.location})`).join(' · ');
-  document.getElementById('dSub').textContent=`${(d.events||[]).length} signals · ${d.location||'unknown'} · ${d.confidence} confidence`;
-  document.getElementById('dShift').innerHTML=
-    `<div class="r"><span>Sessions</span><b>${sesh||'—'}</b></div>
-     <div class="r"><span>Worked</span><b>${worked}</b></div>
-     <div class="r"><span>vs shift</span><b class="${dCls}">${dTxt}</b></div>`;
-  const evs=d.events||[];
-  document.getElementById('dSignals').innerHTML = evs.length? evs.map(e=>{
-    const t=e.ts.slice(11,19);
-    return `<div class="sig ${e.kind}"><div class="tm">${t}</div><div class="desc">${e.detail||e.code} <code>evt ${e.code}${e.ssid?' · '+e.ssid:''}</code></div><div class="k2">${e.kind==='human'?'HUMAN':'device'}</div></div>`;
-  }).join('') : '<div class="muted" style="font-size:12.5px;padding:8px 0">Session built from idle-activity samples (no discrete events stored for this range).</div>';
+  if(d.state==='leave'){
+    document.getElementById('dIn').textContent='—'; document.getElementById('dOut').textContent='—';
+    document.getElementById('dSub').textContent=`${leaveLabel(d)} · credited toward required hours`;
+    document.getElementById('dShift').innerHTML=
+      `<div class="r"><span>${leaveLabel(d)}</span><b>${d.leave_note?escapeHtml(d.leave_note):'Whole day'}</b></div>`;
+    document.getElementById('dSignals').innerHTML='';
+  }else{
+    document.getElementById('dIn').textContent=d.in||'—'; document.getElementById('dOut').textContent=d.out||'—';
+    const worked=`${Math.floor(d.worked_minutes/60)}h ${String(d.worked_minutes%60).padStart(2,'0')}m`;
+    const dCls=d.delta_minutes==null?'':(d.delta_minutes>=0?'pos':'neg');
+    const dTxt=d.delta_minutes==null?'n/a — fallback capture':(d.delta_str||'');
+    const sesh=(d.sessions||[]).map(s=>`${s.start}–${s.end} (${s.location})`).join(' · ');
+    document.getElementById('dSub').textContent=`${(d.events||[]).length} signals · ${d.location||'unknown'} · ${d.confidence} confidence`;
+    document.getElementById('dShift').innerHTML=
+      `<div class="r"><span>Sessions</span><b>${sesh||'—'}</b></div>
+       <div class="r"><span>Worked</span><b>${worked}</b></div>
+       ${d.leave_minutes?`<div class="r"><span>Leave credited</span><b>${Math.floor(d.leave_minutes/60)}h ${String(d.leave_minutes%60).padStart(2,'0')}m</b></div>`:''}
+       <div class="r"><span>vs Shift</span><b class="${dCls}">${dTxt}</b></div>`;
+    const evs=d.events||[];
+    document.getElementById('dSignals').innerHTML = evs.length? evs.map(e=>{
+      const t=e.ts.slice(11,19);
+      return `<div class="sig ${e.kind}"><div class="tm">${t}</div><div class="desc">${e.detail||e.code} <code>evt ${e.code}${e.ssid?' · '+e.ssid:''}</code></div><div class="k2">${e.kind==='human'?'HUMAN':'device'}</div></div>`;
+    }).join('') : '<div class="muted" style="font-size:12.5px;padding:8px 0">Session built from idle-activity samples (no discrete events stored for this range).</div>';
+  }
+  const lrecs=d.leave_records||[];
+  document.getElementById('dLeave').innerHTML = lrecs.length?
+    `<div class="proof-h">Leave on this day</div>` + lrecs.map(r=>
+      `<div class="sig"><div class="desc">${r.full_day?'Whole day':`${r.start_time}–${r.end_time}`}${r.note?' · '+escapeHtml(r.note):''}</div>
+        <button class="btn" style="margin-left:auto;padding:2px 8px;font-size:11px" onclick="removeLeave(${r.id},'${day}')">Remove</button></div>`
+    ).join('') : '';
   document.getElementById('drawer').classList.add('show');
+}
+async function removeLeave(id, day){
+  if(!HAS_API){toast('Editing leave works in the installed app');return;}
+  await apiCall('remove_leave', id);
+  toast('Leave removed');
+  await loadOverview(CUR.period||'range', CUR.range_start, CUR.range_end);
+  openDay(day);
+}
+
+function todayISO(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;}
+function openLeaveEditor(day){
+  const d = day || todayISO();
+  document.getElementById('lvStart').value = d;
+  document.getElementById('lvEnd').value = d;
+  document.getElementById('lvHoursToggle').classList.add('off');
+  document.getElementById('lvTimeRow').style.display='none';
+  document.getElementById('lvEnd').disabled=false;
+  document.getElementById('lvType').value='leave';
+  document.getElementById('lvNote').value='';
+  document.getElementById('leaveDrawer').classList.add('show');
+}
+function closeLeaveEditor(){document.getElementById('leaveDrawer').classList.remove('show');}
+document.getElementById('leaveDrawer').addEventListener('click',e=>{if(e.target.id==='leaveDrawer')closeLeaveEditor();});
+function toggleLeaveHours(){
+  const t=document.getElementById('lvHoursToggle');
+  t.classList.toggle('off');
+  const on = !t.classList.contains('off');
+  document.getElementById('lvTimeRow').style.display = on?'flex':'none';
+  document.getElementById('lvEnd').disabled = on;
+  if(on) document.getElementById('lvEnd').value = document.getElementById('lvStart').value;
+}
+function lvSyncEnd(){
+  if(!document.getElementById('lvHoursToggle').classList.contains('off'))
+    document.getElementById('lvEnd').value = document.getElementById('lvStart').value;
+}
+async function saveLeave(){
+  if(!HAS_API){toast('Marking leave works in the installed app');return;}
+  const start=document.getElementById('lvStart').value, end=document.getElementById('lvEnd').value;
+  if(!start||!end){toast('Pick a date');return;}
+  const hoursOnly = !document.getElementById('lvHoursToggle').classList.contains('off');
+  const note=document.getElementById('lvNote').value.trim()||null;
+  const type=document.getElementById('lvType').value;
+  const st = hoursOnly?document.getElementById('lvStartTime').value:null;
+  const et = hoursOnly?document.getElementById('lvEndTime').value:null;
+  if(hoursOnly && st>=et){toast('End time must be after start time');return;}
+  const r=await apiCall('add_leave', start, hoursOnly?start:end, !hoursOnly, st, et, note, type);
+  if(r.ok){toast('Leave marked');closeLeaveEditor();await loadOverview(CUR.period||'range', CUR.range_start, CUR.range_end);}
+  else toast(r.reason||'Could not save leave');
+}
+
+// ---- capture attendance (screenshot fallback for a failed/missing badge) ----
+function openCaptureRange(){
+  if(!HAS_API){toast('Capture works in the installed app');return;}
+  const t = todayISO();
+  document.getElementById('capStart').value = t;
+  document.getElementById('capEnd').value = t;
+  document.getElementById('captureRangeDrawer').classList.add('show');
+}
+function closeCaptureRange(){document.getElementById('captureRangeDrawer').classList.remove('show');}
+document.getElementById('captureRangeDrawer').addEventListener('click',e=>{if(e.target.id==='captureRangeDrawer')closeCaptureRange();});
+
+function renderCaptureStage(days, start, end, who){
+  const rows=(days||[]).map(d=>{
+    const status=d.state==='leave'?leaveLabel(d):(d.state==='dayoff'?(d.recurring?'Weekly day off':'Day off'):(STATUS_LABELS[d.state]||(d.confidence==='low'?'Low confidence':'Normal')));
+    const worked=d.state==='worked'?`${Math.floor(d.worked_minutes/60)}h ${String(d.worked_minutes%60).padStart(2,'0')}m`:'—';
+    return `<tr><td style="padding:8px 6px;border-bottom:1px solid var(--line-2)">${d.label||d.day}</td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line-2)" class="t">${d.in||'—'}</td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line-2)" class="t">${d.out||'—'}</td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line-2)" class="t">${worked}</td>
+      <td style="padding:8px 6px;border-bottom:1px solid var(--line-2)">${status}</td></tr>`;
+  }).join('') || `<tr><td colspan="5" class="muted" style="padding:14px 6px">No data captured for this range</td></tr>`;
+  const rangeLabel = start===end
+    ? new Date(start+'T00:00').toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+    : `${new Date(start+'T00:00').toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})} – ${new Date(end+'T00:00').toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})}`;
+  document.getElementById('captureContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px">
+      <img src="assets/mark.png" style="width:26px;height:26px">
+      <div style="font-family:var(--display);font-weight:600;font-size:15px;color:var(--ink)">Takt — Attendance record</div>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:2px">${escapeHtml(who)}</div>
+    <div style="font-size:21px;font-weight:600;color:var(--ink);font-family:var(--display);margin-bottom:20px">${rangeLabel}</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="text-align:left;border-bottom:2px solid var(--line)">
+        <th style="padding:8px 6px">Day</th><th style="padding:8px 6px">Time in</th><th style="padding:8px 6px">Time out</th>
+        <th style="padding:8px 6px">Worked</th><th style="padding:8px 6px">Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="disc" style="position:static;margin-top:24px;border-top:1px solid var(--line);border-radius:8px;padding:11px 14px">
+      <svg viewBox="0 0 24 24" style="width:15px;height:15px;flex:none;stroke:var(--muted);fill:none;stroke-width:1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+      <span><b>Device-activity record.</b> Shows when this laptop was active — a personal corroboration signal, not certified presence.</span></div>
+    <div style="font-size:10.5px;color:var(--faint);margin-top:10px;font-family:var(--mono)">Generated ${new Date().toLocaleString()}</div>`;
+}
+
+async function runCaptureAttendance(){
+  if(!HAS_API){toast('Capture works in the installed app');return;}
+  const start=document.getElementById('capStart').value, end=document.getElementById('capEnd').value;
+  if(!start||!end){toast('Pick a date');return;}
+  if(end<start){toast('End date is before start date');return;}
+  closeCaptureRange();
+  const [dayData, who] = await Promise.all([apiCall('get_range_days', start, end), apiCall('whoami')]);
+  renderCaptureStage(dayData.days, start, end, who.name);
+  const stage=document.getElementById('captureStage');
+  stage.style.display='block';
+  await new Promise(res=>requestAnimationFrame(()=>requestAnimationFrame(res)));
+  const r=await apiCall('capture_attendance', start, end);
+  stage.style.display='none';
+  toast(r.ok?`Saved ${r.filename} to Downloads`:`Couldn't capture: ${r.reason||'unknown error'}`);
 }
 function closeDrawer(){document.getElementById('drawer').classList.remove('show');}
 document.getElementById('drawer').addEventListener('click',e=>{if(e.target.id==='drawer')closeDrawer();});
@@ -562,7 +797,7 @@ async function renderProjectsView(){
       <div class="proj-rail">
         <div class="rh"><h3>Projects</h3></div>
         ${railItems}
-        <div class="newproj-row"><button class="btn" style="width:100%;justify-content:center" onclick="openProjModal()">+ New project</button></div>
+        <div class="newproj-row"><button class="btn" style="width:100%;justify-content:center" onclick="openProjModal()">+ New Project</button></div>
       </div>
       <div class="proj-main" id="projMain"></div>
     </div>`;
@@ -605,7 +840,7 @@ function renderGantt(tasks, color){
   if(!tasks.length) return `<div class="empty-proj">
       <svg viewBox="0 0 24 24"><path d="M3 5h18M3 5v14h7V5M14 9h7M14 14h7M14 19h7"/></svg>
       <div>No tasks yet in this project.</div>
-      <div style="margin-top:10px"><button class="btn primary" onclick="openTaskEditor(null)">+ Add first task</button></div>
+      <div style="margin-top:10px"><button class="btn primary" onclick="openTaskEditor(null)">+ Add First Task</button></div>
     </div>`;
   const dmin=new Date(Math.min(...tasks.map(t=>+new Date(t.start_date))));
   const dmax=new Date(Math.max(...tasks.map(t=>+new Date(t.end_date))));
@@ -631,11 +866,11 @@ function renderGantt(tasks, color){
   }).join('');
   const todayOverlay = todayPct!==null ? `<div class="gtoday-all" style="left:calc(168px + (100% - 168px) * ${todayPct/100})"></div>` : '';
 
-  return scale + `<div class="gantt-body">${todayOverlay}${rows}</div>` + `<div class="gantt-add"><button class="btn" onclick="openTaskEditor(null)">+ Add task</button></div>`;
+  return scale + `<div class="gantt-body">${todayOverlay}${rows}</div>` + `<div class="gantt-add"><button class="btn" onclick="openTaskEditor(null)">+ Add Task</button></div>`;
 }
 
 function renderKanban(tasks, color){
-  const cols=[['todo','To do'],['doing','In progress'],['done','Done']];
+  const cols=[['todo','To Do'],['doing','In Progress'],['done','Done']];
   const order=['todo','doing','done'];
   return `<div class="kanban">${cols.map(([status,label])=>{
     const items=tasks.filter(t=>t.status===status);
@@ -739,57 +974,107 @@ function escapeHtml(s){const d=document.createElement('div');d.textContent=s;ret
 
 // ==================== end projects module ====================
 
-function renderShiftView(){
+async function renderShiftView(){
+  if(!SETTINGS){
+    document.getElementById('shift').innerHTML='<div class="muted" style="padding:32px;text-align:center">Loading…</div>';
+    setTimeout(()=>{ if(document.querySelector('.view.on')?.id==='shift') renderShiftView(); },400);
+    return;
+  }
   const st=SETTINGS, sh=st.shift, en=st.engine;
+  OFF_DAYS_PICK=[...(st.off_days||[5,6])];
   const inLo=fmt(toMin(sh.start)-sh.flex_minutes),inHi=fmt(toMin(sh.start)+sh.flex_minutes);
   const outLo=fmt(toMin(sh.end)-sh.flex_minutes),outHi=fmt(toMin(sh.end)+sh.flex_minutes);
+  const knownSsids = HAS_API ? await apiCall('known_ssids') : [];
+  const officeList = st.office_ssids||[];
+  const ssidRows = knownSsids.length ? knownSsids.map(s=>{
+    const checked = officeList.includes(s.ssid);
+    const seen = new Date(s.last_seen).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+    return `<label style="display:flex;align-items:center;gap:9px;padding:7px 0;font-size:13px;cursor:pointer;border-bottom:1px solid var(--line-2)">
+      <input type="checkbox" ${checked?'checked':''} onchange="toggleSsidPick('${escapeHtml(s.ssid).replace(/'/g,"\\'")}',this.checked)">
+      <span style="flex:1">${escapeHtml(s.ssid)}</span>
+      <span class="muted" style="font-size:11px">seen ${seen} · ${s.n}×</span></label>`;
+  }).join('') : `<div class="muted" style="font-size:12.5px;padding:6px 0">No Wi-Fi networks captured yet — once Takt sees a connect event, it'll show up here to pick from.</div>`;
   document.getElementById('shift').innerHTML=`
-   <div class="card" style="margin-bottom:16px"><div class="cap"><h3>Your shift</h3><div class="hint">Under/overtime is measured against this</div></div>
-     <div class="field"><div class="fl"><b>Shift template</b><p>Preset or custom. Add templates for rotating shifts.</p></div>
+   <div class="card" style="margin-bottom:16px"><div class="cap"><h3>Your Shift</h3><div class="hint">Under/overtime is measured against this</div></div>
+     <div class="field"><div class="fl"><b>Shift Template</b><p>Preset or custom. Add templates for rotating shifts.</p></div>
        <div class="ctrl"><select class="sel"><option>Normal · ${sh.start}–${sh.end}</option><option>Custom…</option></select></div></div>
-     <div class="field"><div class="fl"><b>Shift start / end</b></div>
+     <div class="field"><div class="fl"><b>Shift Start / End</b></div>
        <div class="ctrl"><input class="inp" id="fStart" value="${sh.start}"><span class="muted">to</span><input class="inp" id="fEnd" value="${sh.end}"></div></div>
      <div class="field"><div class="fl"><b>Flexibility</b><p>Times inside this window count as on-shift.</p></div>
        <div class="ctrl"><span class="muted">±</span><input class="inp" id="fFlex" value="${(sh.flex_minutes/60).toFixed(0)}:00">
          <span class="flexspan">in ${inLo}–${inHi} · out ${outLo}–${outHi}</span></div></div>
-     <div class="field"><div class="fl"><b>Required hours</b><p>Paid hours expected per day.</p></div>
+     <div class="field"><div class="fl"><b>Required Hours</b><p>Paid hours expected per day.</p></div>
        <div class="ctrl"><input class="inp" id="fReq" value="${fmt(sh.required_minutes)}"></div></div>
+     <div class="field"><div class="fl"><b>Start of Week</b><p>What the Week view and reports count from.</p></div>
+       <div class="ctrl"><select class="sel" id="fWeekStart">
+         <option value="6" ${st.week_start===6?'selected':''}>Sunday</option>
+         <option value="0" ${st.week_start===0?'selected':''}>Monday</option>
+         <option value="5" ${st.week_start===5?'selected':''}>Saturday</option>
+       </select></div></div>
+     <div class="field" style="flex-direction:column;align-items:stretch;gap:8px">
+       <div class="fl"><b>Regular Days Off</b><p>Any count works — compressed workweeks, one day off, whatever your real schedule is. Real activity on a checked day still shows as worked.</p></div>
+       <div style="display:flex;gap:16px;flex-wrap:wrap">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((name,i)=>
+         `<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+           <input type="checkbox" ${(st.off_days||[]).includes(i)?'checked':''} onchange="toggleOffDay(${i},this.checked)">${name}</label>`
+       ).join('')}</div>
+     </div>
    </div>
-   <div class="card" style="margin-bottom:16px"><div class="cap"><h3>Where you worked</h3><div class="hint">Office vs home, from Wi-Fi</div></div>
-     <div class="field"><div class="fl"><b>Office Wi-Fi network(s)</b><p>Match the connected SSID (WLAN log) → Office; anything else → Home.</p></div>
+   <div class="card" style="margin-bottom:16px"><div class="cap"><h3>Where You Worked</h3><div class="hint">Office vs home, from Wi-Fi</div></div>
+     <div class="field" style="flex-direction:column;align-items:stretch;gap:4px">
+       <div class="fl"><b>Office Wi-Fi Network(s)</b><p>Check every network your office broadcasts (2.4GHz and 5GHz often have different names) — anything unchecked counts as Home.</p></div>
+       <div id="ssidPicker">${ssidRows}</div>
+     </div>
+     <div class="field"><div class="fl"><b>Or Type Manually</b><p>Comma-separated — for a network Takt hasn't seen a connect event for yet.</p></div>
        <div class="ctrl"><input class="inp wide" id="fSsid" value="${st.office_ssids.join(', ')}"></div></div>
      <div class="note"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z"/></svg>
-       <div>VPN state (Zscaler) can't be read — its logs live in the Zscaler app folder, not Event Viewer. A wired/no-Wi-Fi day shows <b>Location unknown</b> rather than a guess.</div></div>
+       <div>VPN/proxy client state can't be read — that kind of software keeps its own logs outside Event Viewer. A wired/no-Wi-Fi day shows <b>Location unknown</b> rather than a guess.</div></div>
    </div>
-   <div class="card" style="margin:0"><div class="cap"><h3>Engine thresholds</h3><div class="hint">How activity becomes sessions</div></div>
-     <div class="field"><div class="fl"><b>End session after idle</b><p>No input for this long ends a work session.</p></div><div class="ctrl"><input class="inp" id="fIdle" value="${en.idle_end_minutes} min"></div></div>
-     <div class="field"><div class="fl"><b>Bridge short breaks</b><p>Gaps shorter than this stay one session.</p></div><div class="ctrl"><input class="inp" id="fBridge" value="${en.bridge_gap_minutes} min"></div></div>
-     <div class="field"><div class="fl"><b>Auto-detect working from home</b><p>Tag the day Home when the office SSID isn't seen.</p></div><div class="ctrl"><div class="toggle ${st.auto_wfh?'':'off'}" onclick="this.classList.toggle('off')"></div></div></div>
-     <div class="field" style="justify-content:flex-end"><button class="btn primary" onclick="saveShift()">Save changes</button></div>
+   <div class="card" style="margin:0"><div class="cap"><h3>Engine Thresholds</h3><div class="hint">How activity becomes sessions</div></div>
+     <div class="field"><div class="fl"><b>End Session After Idle</b><p>No input for this long ends a work session.</p></div><div class="ctrl"><input class="inp" id="fIdle" value="${en.idle_end_minutes} min"></div></div>
+     <div class="field"><div class="fl"><b>Bridge Short Breaks</b><p>Gaps shorter than this stay one session.</p></div><div class="ctrl"><input class="inp" id="fBridge" value="${en.bridge_gap_minutes} min"></div></div>
+     <div class="field"><div class="fl"><b>Auto-Detect Working From Home</b><p>Tag the day Home when the office SSID isn't seen.</p></div><div class="ctrl"><div class="toggle ${st.auto_wfh?'':'off'}" onclick="this.classList.toggle('off')"></div></div></div>
+     <div class="field" style="justify-content:flex-end"><button class="btn primary" onclick="saveShift()">Save Changes</button></div>
    </div>`;
 }
 function renderBackupView(){
+  if(!SETTINGS){
+    document.getElementById('backup').innerHTML='<div class="muted" style="padding:32px;text-align:center">Loading…</div>';
+    setTimeout(()=>{ if(document.querySelector('.view.on')?.id==='backup') renderBackupView(); },400);
+    return;
+  }
   const ig=(HAS_API?CUR_INTEG:window.TAKT_DEMO.integrity)||{chain_ok:true,source:'demo'};
   document.getElementById('backup').innerHTML=`
-   <div class="card" style="margin-bottom:16px"><div class="cap"><h3>Backup &amp; protection</h3><div class="hint">Set once, then leave it running</div></div>
+   <div class="card" style="margin-bottom:16px"><div class="cap"><h3>Backup &amp; Protection</h3><div class="hint">Set once, then leave it running</div></div>
      <div class="rowcard"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v6c0 5-4 8-9 9-5-1-9-4-9-9z"/></svg></div>
        <div class="tx"><b>Encryption</b><p>AES-256-GCM · key sealed to this Windows account with DPAPI</p></div><span class="ok-chip">● Active</span></div>
      <div class="rowcard"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4zM4 7l3-4h10l3 4"/></svg></div>
-       <div class="tx"><b>Backup folder</b><p>Chosen on first run · exports are written here</p></div><button class="btn">Change…</button></div>
+       <div class="tx"><b>Backup Folder</b><p>${SETTINGS.backup_dir?`<code style="font-family:var(--mono);font-size:11.5px">${SETTINGS.backup_dir}</code>`:'Not set — you\'ll be asked each time you export'}</p></div><button class="btn" onclick="chooseBackupDir()">Change…</button></div>
      <div class="rowcard"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 8v4l3 2M12 3a9 9 0 100 18 9 9 0 000-18z"/></svg></div>
-       <div class="tx"><b>Runs at login</b><p>Scheduled Task with highest privileges — no need to relaunch</p></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+       <div class="tx"><b>Runs at Login</b><p>Scheduled Task with highest privileges — no need to relaunch</p></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
      <div class="rowcard"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
-       <div class="tx"><b>Tamper-evidence</b><p>Hash chain over all records — an edited past entry breaks the chain</p></div>
+       <div class="tx"><b>Tamper-Evidence</b><p>Hash chain over all records — an edited past entry breaks the chain</p></div>
        <span class="ok-chip ${ig.chain_ok?'':'warn-chip'}">${ig.chain_ok?'✓ Chain verified':'⚠ Chain broken'}</span></div>
    </div>
-   <div class="card" style="margin:0"><div class="cap"><h3>Import a backup</h3></div><div class="bd">
+   <div class="card" style="margin:0"><div class="cap"><h3>Import a Backup</h3></div><div class="bd">
      <p style="margin:0 0 6px;font-size:13px">Load a previously exported <code style="font-family:var(--mono);font-size:12px">.takt</code> file to restore history or move it to a new machine.</p>
-     <button class="btn primary" onclick="doImport()"><svg viewBox="0 0 24 24"><path d="M20 8v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8M12 15V3m0 0l-4 4m4-4l4 4"/></svg>Choose file to import</button>
+     <button class="btn primary" onclick="doImport()"><svg viewBox="0 0 24 24"><path d="M20 8v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8M12 15V3m0 0l-4 4m4-4l4 4"/></svg>Choose File to Import</button>
      <div class="note"><svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3l-8-14a2 2 0 00-3.4 0z"/></svg>
        <div>Imported records are labelled <b>user-supplied</b> and kept separate — never counted as evidence. A fully offline app can't prove imported data wasn't edited; encryption here stops casual tampering and keeps the file private.</div></div>
    </div></div>`;
 }
 const fmt=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+
+function toggleSsidPick(ssid, checked){
+  const f=document.getElementById('fSsid');
+  let list=f.value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(checked){ if(!list.includes(ssid)) list.push(ssid); }
+  else{ list=list.filter(s=>s!==ssid); }
+  f.value=list.join(', ');
+}
+function toggleOffDay(d, checked){
+  if(checked){ if(!OFF_DAYS_PICK.includes(d)) OFF_DAYS_PICK.push(d); }
+  else{ OFF_DAYS_PICK=OFF_DAYS_PICK.filter(x=>x!==d); }
+}
 
 async function saveShift(){
   if(!HAS_API){toast('Saving works in the installed app');return;}
@@ -798,59 +1083,214 @@ async function saveShift(){
   SETTINGS.shift.flex_minutes=toMin(g('fFlex').replace('h',''));
   SETTINGS.shift.required_minutes=toMin(g('fReq'));
   SETTINGS.office_ssids=g('fSsid').split(',').map(s=>s.trim()).filter(Boolean);
+  SETTINGS.week_start=parseInt(document.getElementById('fWeekStart').value);
+  SETTINGS.off_days=[...OFF_DAYS_PICK];
   SETTINGS.engine.idle_end_minutes=parseInt(g('fIdle'))||20;
   SETTINGS.engine.bridge_gap_minutes=parseInt(g('fBridge'))||10;
   await window.pywebview.api.save_settings(JSON.stringify(SETTINGS));
-  toast('Shift saved — recomputing'); loadOverview(CUR.period||'range');
+  toast('Shift saved — recomputing'); loadOverview(CUR.period||'range', CUR.range_start, CUR.range_end);
 }
 async function doExport(period){
   document.getElementById('expMenu').classList.remove('show');
   if(!HAS_API){toast('Export writes an encrypted file in the app');return;}
-  const r=await apiCall('export',period);
+  const r=await apiCall('export',period,CUR.range_start,CUR.range_end);
   toast(r.ok?`Exported ${r.bytes} bytes`:`Export ${r.reason}`);
 }
 async function doImport(){
   if(!HAS_API){toast('Import reads an encrypted file in the app');return;}
   const r=await apiCall('import_backup');
-  if(r.ok){toast(`Imported ${r.rows} rows (labelled user-supplied)`);loadOverview(CUR.period||'range');}
+  if(r.ok){toast(`Imported ${r.rows} rows (labelled user-supplied)`);loadOverview(CUR.period||'range', CUR.range_start, CUR.range_end);}
   else toast(`Import ${r.reason}`);
 }
-function downloadReport(){toast('Report download available in the app');}
+async function downloadReport(){
+  if(!HAS_API){toast('Report download available in the app');return;}
+  const r=await apiCall('download_report', CUR.period||'range', CUR.range_start, CUR.range_end);
+  toast(r.ok?`Saved ${r.filename} to Downloads`:`Couldn't save report: ${r.reason||'unknown error'}`);
+}
+async function chooseBackupDir(){
+  if(!HAS_API){toast('Choosing a folder works in the installed app');return;}
+  const r=await apiCall('choose_backup_dir');
+  if(r.ok){SETTINGS.backup_dir=r.path;toast('Backup folder set');renderBackupView();}
+  else if(r.reason!=='cancelled') toast(`Couldn't set folder: ${r.reason}`);
+}
 
 // nav + seg
-document.querySelectorAll('.nav a').forEach(a=>a.onclick=()=>{
-  document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('on'));a.classList.add('on');
-  const v=a.dataset.view;document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id===v));
+function goToView(v){
+  document.querySelectorAll('.nav a').forEach(x=>x.classList.toggle('on',x.dataset.view===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id===v));
   if(v==='shift')renderShiftView(); if(v==='backup')renderBackupView(); if(v==='projects')renderProjectsView();
-});
+}
+document.querySelectorAll('.nav a').forEach(a=>a.onclick=()=>goToView(a.dataset.view));
 document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#seg button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
-  loadOverview(b.dataset.p);
+  document.getElementById('rangePicker').style.display = b.dataset.p==='range'?'flex':'none';
+  if(b.dataset.p==='range') loadOverview('range', document.getElementById('rgStart').value, document.getElementById('rgEnd').value);
+  else loadOverview(b.dataset.p);
 });
+function onRangePicked(){
+  const s=document.getElementById('rgStart'), e=document.getElementById('rgEnd');
+  if(e.value < s.value) e.value = s.value;
+  loadOverview('range', s.value, e.value);
+}
+document.getElementById('rgStart').onchange = onRangePicked;
+document.getElementById('rgEnd').onchange = onRangePicked;
+
+// ---- guided tour (demo mode only) ----
+const TOUR_STEPS=[
+  {view:null,selector:null,title:'Welcome to Takt',body:'A quick walkthrough of every section — click Next whenever you\'re ready.'},
+  {view:'overview',selector:'#stats',title:'At-a-Glance Stats',body:'Average time in/out, hours worked per day, and your net vs shift for the selected period.'},
+  {view:'overview',selector:'#presenceCard',title:'Daily Presence vs Shift',body:'Every day\'s sessions plotted against your shift window — teal for office, purple for home.'},
+  {view:'overview',selector:'#trendCard',title:'Time In & Out Trend',body:'Spot patterns over time — consistently early, late, or right on schedule.'},
+  {view:'overview',selector:'#seg',title:'Flexible Time Periods',body:'Switch between Week, Month, Year, or set any custom date range with the pickers next to it.'},
+  {view:'overview',selector:'#downloadReportBtn',title:'Download Report',body:'A CSV summary of the selected period, saved straight to your Downloads folder.'},
+  {view:'overview',selector:'#captureAttendanceBtn',title:'Capture Attendance',body:'A clean screenshot for when a badge system fails or is unavailable — fallback proof of attendance for any date range.'},
+  {view:'records',selector:'[data-view="records"]',title:'Daily Records',body:'Every day itemized — click any row to see the signals behind it.'},
+  {view:'records',selector:'#markLeaveBtn',title:'Mark Leave',body:'Tag a whole day (or a date range) or specific hours as approved leave — credited toward required hours automatically, so it never shows as undertime.'},
+  {view:'projects',selector:'[data-view="projects"]',title:'Projects',body:'A lightweight Gantt + Kanban board for tracking project work alongside your attendance.'},
+  {view:'shift',selector:'[data-view="shift"]',title:'Shift & Schedule',body:'Configure your shift hours, flex window, engine thresholds, and office Wi-Fi for location detection.'},
+  {view:'backup',selector:'[data-view="backup"]',title:'Backup & Security',body:'Encrypted backups, a tamper-evidence hash chain, and where your data lives.'},
+  {view:null,selector:null,title:'That\'s the Tour',body:'Explore freely from here, or click "App Guide" again anytime.'},
+];
+let TOUR_IDX=0;
+
+function positionTourAt(el){
+  const spot=document.getElementById('tourSpotlight'), tip=document.getElementById('tourTooltip'), pad=8;
+  if(el){
+    el.scrollIntoView({block:'center'});
+    const r=el.getBoundingClientRect();
+    spot.style.display='block';
+    spot.style.top=(r.top-pad)+'px'; spot.style.left=(r.left-pad)+'px';
+    spot.style.width=(r.width+pad*2)+'px'; spot.style.height=(r.height+pad*2)+'px';
+    let tipTop=r.bottom+pad+12;
+    if(tipTop+180>window.innerHeight) tipTop=Math.max(20,r.top-pad-12-180);
+    const tipLeft=Math.min(Math.max(20,r.left),window.innerWidth-320);
+    tip.style.top=tipTop+'px'; tip.style.left=tipLeft+'px'; tip.style.transform='none';
+  }else{
+    spot.style.display='none';
+    tip.style.top='50%'; tip.style.left='50%'; tip.style.transform='translate(-50%,-50%)';
+  }
+}
+function showTourStep(i){
+  TOUR_IDX=i;
+  const step=TOUR_STEPS[i];
+  if(step.view) goToView(step.view);
+  document.getElementById('tourStepNum').textContent=`Step ${i+1} of ${TOUR_STEPS.length}`;
+  document.getElementById('tourTitle').textContent=step.title;
+  document.getElementById('tourBody').textContent=step.body;
+  document.getElementById('tourBackBtn').style.visibility=i===0?'hidden':'visible';
+  document.getElementById('tourNextBtn').textContent=i===TOUR_STEPS.length-1?'Finish':'Next';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    positionTourAt(step.selector?document.querySelector(step.selector):null);
+  }));
+}
+let TOUR_WAS_REAL=false;
+async function startTour(){
+  // The guide is meant for walkthroughs/presentations, so it should always
+  // have rich data to point at — not whatever's actually captured, which for
+  // a fresh real install can be thin or empty. Reuse the app's existing
+  // HAS_API fallback (every render function already knows how to fall back
+  // to window.TAKT_DEMO) rather than re-implementing per-view data swapping.
+  // The tour overlay blocks all clicks to the real UI underneath, so forcing
+  // this flag for the duration is safe — nothing can trigger a real write.
+  if(HAS_API){
+    TOUR_WAS_REAL=true;
+    HAS_API=false;
+    SETTINGS=window.TAKT_DEMO.settings;
+    await loadOverview('range');
+    // Wrap the identity shown in the sidebar too, not just the data — a
+    // presentation shouldn't have the real Windows username on screen.
+    document.getElementById('userAv').textContent='JD';
+    document.getElementById('userLbl').textContent='Juan Dela Cruz';
+    document.getElementById('machineLbl').textContent='this laptop · demo';
+    document.getElementById('srcLbl').textContent='Demo data — open in the app for live logs';
+  }
+  document.getElementById('tourOverlay').style.display='block';
+  showTourStep(0);
+}
+function tourNext(){ TOUR_IDX>=TOUR_STEPS.length-1 ? endTour() : showTourStep(TOUR_IDX+1); }
+function tourBack(){ if(TOUR_IDX>0) showTourStep(TOUR_IDX-1); }
+// Always labeled "App Guide" — the automatic restore in endTour() is
+// reliable enough that this doesn't need its own "Return to Profile" state.
+// Still routes through endTour() if TOUR_WAS_REAL is somehow still true
+// (overlay dismissed some other way) as a quiet safety net, but that's
+// invisible in normal use since the button never relabels itself.
+function guideBtnClick(){ TOUR_WAS_REAL ? endTour() : startTour(); }
+async function endTour(){
+  document.getElementById('tourOverlay').style.display='none';
+  if(TOUR_WAS_REAL){
+    TOUR_WAS_REAL=false;
+    HAS_API=true;
+    SETTINGS=await apiCall('get_settings');
+    CUR_INTEG=await apiCall('integrity');
+    document.getElementById('srcLbl').textContent = CUR_INTEG.source==='windows'?'Reading Security, System & WLAN logs':'Demo data (no Windows logs)';
+    document.getElementById('machineLbl').textContent = CUR_INTEG.source==='windows'?'this laptop · live':'this laptop · demo';
+    document.getElementById('userAv').textContent='BM';
+    try{const who=await apiCall('whoami'); document.getElementById('userLbl').textContent=who.name;}catch(e){}
+    await loadOverview('range');
+    goToView(document.querySelector('.view.on')?.id||'overview');
+  }
+}
+window.addEventListener('resize',()=>{
+  if(document.getElementById('tourOverlay').style.display==='block'){
+    const step=TOUR_STEPS[TOUR_IDX];
+    positionTourAt(step.selector?document.querySelector(step.selector):null);
+  }
+});
+
 const eb=document.getElementById('expBtn'),em=document.getElementById('expMenu');
 eb.onclick=e=>{e.stopPropagation();em.classList.toggle('show');};
 document.addEventListener('click',()=>em.classList.remove('show'));
 
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function updateClock(){
+  const n=new Date();
+  const hh=String(n.getHours()).padStart(2,'0'),mm=String(n.getMinutes()).padStart(2,'0'),ss=String(n.getSeconds()).padStart(2,'0');
+  document.getElementById('clockLbl').textContent=`${WD[n.getDay()]} ${n.getDate()} ${MO[n.getMonth()]} · ${hh}:${mm}:${ss}`;
+}
+updateClock();
+setInterval(updateClock,1000);
+
 let CUR_INTEG=null;
+let BOOTED=false;
 async function boot(){
+  // Idempotency guard: with two independent triggers below (the
+  // 'pywebviewready' event and a DOMContentLoaded+timeout fallback for pure
+  // browser preview), both could still fire close together under load. A
+  // second run would re-evaluate HAS_API/SETTINGS from whatever state won
+  // that race, and if a save happened in between, it could silently commit
+  // demo-derived defaults over real settings. Only the first call to
+  // actually run matters — everything it needs (HAS_API) is read fresh at
+  // that moment, not at listener-registration time, so whichever trigger
+  // fires first gets an accurate read regardless of order.
+  if(BOOTED) return;
+  BOOTED=true;
   HAS_API = !!(window.pywebview && window.pywebview.api);
   if(HAS_API){
-    document.getElementById('capLbl').textContent='Capturing · runs at login';
     try{await window.pywebview.api.sync(30);}catch(e){}
     SETTINGS=await apiCall('get_settings');
     CUR_INTEG=await apiCall('integrity');
     document.getElementById('srcLbl').textContent = CUR_INTEG.source==='windows'?'Reading Security, System & WLAN logs':'Demo data (no Windows logs)';
     document.getElementById('machineLbl').textContent = CUR_INTEG.source==='windows'?'this laptop · live':'this laptop · demo';
+    try{const who=await apiCall('whoami'); document.getElementById('userLbl').textContent=who.name;}catch(e){}
   }else{
     SETTINGS=window.TAKT_DEMO.settings;
-    document.getElementById('capLbl').textContent='Preview (browser)';
     document.getElementById('srcLbl').textContent='Demo data — open in the app for live logs';
   }
   await loadOverview('range');
 }
-if(window.pywebview){ window.addEventListener('pywebviewready',boot); }
-else { window.addEventListener('DOMContentLoaded',()=>{ if(!window.pywebview) boot(); }); }
-// safety: if pywebview injects late, still boot after load
-window.addEventListener('load',()=>{ if(!CUR.days) setTimeout(()=>{ if(!CUR.days) boot(); },300); });
+// window.pywebview is injected asynchronously by pywebview's backend thread, so it may
+// not exist yet when this script runs. Always listen for 'pywebviewready' rather than
+// gating the listener on window.pywebview already being present — otherwise a slow
+// injection races past this check and boot() never re-runs with the real API attached.
+if(window.pywebview && window.pywebview.api){
+  boot();
+}else{
+  window.addEventListener('pywebviewready',boot,{once:true});
+  // Fallback for pure browser preview (no pywebview ever). boot() itself
+  // re-checks window.pywebview.api fresh when this actually runs rather than
+  // trusting this closure's snapshot, so whichever trigger reaches boot()
+  // first — this timeout or 'pywebviewready' — gets an accurate read.
+  window.addEventListener('DOMContentLoaded',()=>{ setTimeout(boot,500); });
+}
 </script>
 </body></html>

@@ -106,7 +106,14 @@ class WindowsSource(EventSource):
             root = ET.fromstring(xml)
             eid = int(root.findtext(".//e:EventID", default="0", namespaces=ns))
             ts_raw = root.find(".//e:TimeCreated", ns).attrib["SystemTime"]
-            ts = dt.datetime.fromisoformat(ts_raw.replace("Z", "+00:00")).astimezone()
+            # Windows event timestamps are UTC; convert to local time then drop
+            # tzinfo so this matches every other naive datetime in the app
+            # (samples, engine.py's _t(), the day-range bounds in _query()
+            # below). Leaving it tz-aware made lo <= t <= hi raise TypeError
+            # on every single event, silently swallowed by the except below —
+            # no event from any channel (Security/System/WLAN) ever actually
+            # passed the date-range filter.
+            ts = dt.datetime.fromisoformat(ts_raw.replace("Z", "+00:00")).astimezone().replace(tzinfo=None)
             data = {d.attrib.get("Name"): (d.text or "")
                     for d in root.findall(".//e:Data", ns)}
             return {"eid": eid, "ts": ts, "data": data}
